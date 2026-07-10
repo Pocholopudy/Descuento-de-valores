@@ -620,8 +620,6 @@ function calc(){
   const diasProm = sums.diasPonderado / sums.nominal;
   const rendimiento = (sums.nominal/sums.montoNetoAPagar - 1) * 365/diasProm;
   const costoNeto = (sums.nominal/sums.montoAPercibir - 1) * 365/diasProm;
-  const ahorroImpDebCred = sums.montoNetoDeGastos * 0.006;
-  const ahorroAnualizado = ahorroImpDebCred/sums.nominal/diasProm*365;
 
   const extraDescuento = sums.VD * extraPct;
   const montoAPercibirConExtra = sums.montoAPercibir - extraDescuento;
@@ -656,8 +654,6 @@ function calc(){
     <div class="row extra"><span class="k">Descuento adicional (${(extraPct*100).toFixed(2)}%)</span><span class="v">− ${fmtMoney(extraDescuento)}</span></div>
     <div class="row total"><span class="k">Monto a percibir con descuento adicional</span><span class="v">${fmtMoney(montoAPercibirConExtra)}</span></div>
     ` : ''}
-    <div class="row"><span class="k">Ahorro Imp. Déb/Créd (0,6%)</span><span class="v">${fmtMoney(ahorroImpDebCred)}</span></div>
-    <div class="row"><span class="k">Ahorro anualizado</span><span class="v">${fmtPct(ahorroAnualizado)}</span></div>
   `;
 }
 
