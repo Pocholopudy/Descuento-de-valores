@@ -706,7 +706,7 @@ async function downloadCardPDF(elId, filename, label){
 
   pdf.setGState(new pdf.GState({opacity:0.74}));
   pdf.setFillColor(4,9,15);
-  pdf.roundRect(mg, panelY, panelW, panelH, 14, 14, 'F');
+  pdf.roundedRect(mg, panelY, panelW, panelH, 14, 14, 'F');
   pdf.setGState(new pdf.GState({opacity:1}));
 
   const fitH = panelH - 60;
