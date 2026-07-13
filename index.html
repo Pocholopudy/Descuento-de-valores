@@ -35,6 +35,32 @@
     font-family:'Manrope',sans-serif;
     -webkit-font-smoothing:antialiased;
     min-height:100%;
+    transition:background .2s, color .2s;
+  }
+  html[data-theme="light"]{
+    --navy-950:#F3F1EA;
+    --navy-900:#FFFFFF;
+    --navy-850:#FFFFFF;
+    --navy-800:#F7F5EE;
+    --navy-700:#ECE9DF;
+    --navy-line:rgba(20,30,45,.14);
+    --ink:#16304F;
+    --ink-dim:rgba(22,48,79,.62);
+    --ink-faint:rgba(22,48,79,.40);
+  }
+  html[data-theme="light"] .bg-art{display:none;}
+  html[data-theme="light"] .card,
+  html[data-theme="light"] .result-card,
+  html[data-theme="light"] .target-banner,
+  html[data-theme="light"] .pot-strip{box-shadow:0 10px 24px -18px rgba(20,30,45,.25);}
+  html[data-theme="light"] .hero-logo{filter:invert(1) brightness(0.3);}
+
+  .theme-toggle{
+    position:fixed;top:16px;right:16px;z-index:10;
+    background:var(--navy-850);border:1.5px solid var(--navy-line);color:var(--ink);
+    font-family:'Manrope',sans-serif;font-weight:700;font-size:12.5px;
+    padding:8px 14px;border-radius:20px;cursor:pointer;
+    display:flex;align-items:center;gap:6px;
   }
   .bg-art{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
   .bg-art svg{width:100%;height:100%;}
@@ -105,6 +131,12 @@
   table.cheques th:first-child, table.cheques td:first-child{text-align:left;}
   table.cheques td{padding:8px;text-align:right;border-bottom:1px solid var(--navy-line);}
   table.cheques tr:last-child td{border-bottom:none;}
+  table.cheques input{
+    width:100%;font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;
+    padding:6px 8px;border:1.5px solid var(--navy-line);border-radius:6px;
+    background:var(--navy-900);color:var(--ink);text-align:right;color-scheme:dark;
+  }
+  table.cheques input:focus{outline:none;border-color:var(--navy-600);}
 
   .results-grid{display:grid;grid-template-columns:1fr;gap:20px;}
   @media(min-width:820px){.results-grid{grid-template-columns:1fr 1fr;}}
@@ -158,6 +190,22 @@
   .target-banner .lbl{font-family:'Manrope',sans-serif;font-size:12px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.05em;}
   .target-banner .val{font-size:20px;font-weight:700;color:var(--gray-100);}
 
+  .hist-row{
+    display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
+    padding:10px 0;border-bottom:1px solid var(--navy-line);font-size:13px;
+  }
+  .hist-row:last-child{border-bottom:none;}
+  .hist-info{display:flex;flex-direction:column;gap:2px;}
+  .hist-info b{font-family:'Manrope',sans-serif;font-size:13.5px;}
+  .hist-info small{color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+  .hist-btn{
+    background:none;border:1.5px solid var(--navy-line);color:var(--ink);
+    font-family:'Manrope',sans-serif;font-weight:700;font-size:12px;
+    padding:7px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;
+  }
+  .hist-btn:hover{border-color:var(--navy-600);}
+  .hist-btn.danger{color:var(--bad);border-color:rgba(217,140,122,.4);}
+
   footer.note{text-align:center;font-size:12px;color:var(--ink-faint);margin-top:30px;font-family:'IBM Plex Mono',monospace;}
 
   @media(max-width:600px){
@@ -187,6 +235,8 @@
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" id="themeToggle">🌙 Oscuro</button>
 
 <div class="bg-art">
   <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
@@ -236,6 +286,11 @@
     <h2 class="section-title">Datos de la operación</h2>
     <p class="section-hint">Completá los datos del instrumento a negociar.</p>
     <div class="card">
+      <div class="field wide" style="margin-bottom:18px;">
+        <label for="inpCliente">Cliente / Comitente (opcional)</label>
+        <input type="text" id="inpCliente" placeholder="Nombre del cliente">
+      </div>
+
       <div class="field wide" style="margin-bottom:18px;">
         <label>¿Qué querés calcular?</label>
         <div class="toggle-group" id="modoCalculoToggle">
@@ -378,13 +433,36 @@
       <div class="result-card comprador" id="cardComprador">
         <div class="result-head"><img src="" id="logoMiniComprador" alt=""><span class="rname">Comprador</span></div>
         <div class="result-body" id="bodyComprador"></div>
-        <div class="result-foot"><button class="dl-btn" id="btnDlComprador">Descargar resumen (PDF)</button></div>
+        <div class="result-foot">
+          <button class="dl-btn" id="btnDlComprador">Descargar resumen (PDF)</button>
+          <button class="dl-btn" id="btnWaComprador" style="margin-top:8px;">Compartir por WhatsApp</button>
+        </div>
       </div>
       <div class="result-card vendedor" id="cardVendedor">
         <div class="result-head"><img src="" id="logoMiniVendedor" alt=""><span class="rname">Vendedor</span></div>
         <div class="result-body" id="bodyVendedor"></div>
-        <div class="result-foot"><button class="dl-btn" id="btnDlVendedor">Descargar resumen (PDF)</button></div>
+        <div class="result-foot">
+          <button class="dl-btn" id="btnDlVendedor">Descargar resumen (PDF)</button>
+          <button class="dl-btn" id="btnWaVendedor" style="margin-top:8px;">Compartir por WhatsApp</button>
+        </div>
       </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2 class="section-title">Escenarios de tasa</h2>
+    <p class="section-hint">Cómo cambia el costo del vendedor si la tasa sube o baja unos puntos, con los mismos días y comisiones.</p>
+    <div class="card">
+      <div id="tasaScenariosWrap"></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2 class="section-title">Historial de operaciones</h2>
+    <p class="section-hint">Guardá esta simulación para no perderla, o recuperá una anterior. Se guarda solo en este navegador.</p>
+    <div class="card">
+      <button class="dl-btn" id="btnGuardarHistorial" style="max-width:280px;">💾 Guardar esta operación</button>
+      <div id="historialWrap" style="margin-top:16px;"></div>
     </div>
   </section>
 
@@ -538,6 +616,9 @@ document.getElementById('btnAddHoliday').addEventListener('click', ()=>{
 renderHolidays();
 
 // ---------- build the list of cheques from the chosen loading mode ----------
+let chequeOverrides = {};
+let lastChequeSignature = null;
+
 function buildCheques(nominal, concertacion){
   const vencIso = document.getElementById('inpVencimiento').value;
   const nCheques = state.modo==='UNICO' ? 1 : Math.max(2, parseInt(document.getElementById('inpNCheques').value)||2);
@@ -564,6 +645,10 @@ function buildCheques(nominal, concertacion){
     return {cheques:[{n:1, monto:nominal, vencimiento:baseVenc}], note:adjustedNote};
   }
 
+  // reset manual per-cheque edits if the underlying generation parameters changed
+  const sig = [nominal, nCheques, state.consecutivos, toISO(baseVenc)].join('|');
+  if(sig !== lastChequeSignature){ chequeOverrides = {}; lastChequeSignature = sig; }
+
   const monto = nominal / nCheques;
   const cheques = [];
   if(nCheques === 1){
@@ -577,18 +662,50 @@ function buildCheques(nominal, concertacion){
   } else {
     for(let i=0;i<nCheques;i++) cheques.push({n:i+1, monto, vencimiento:new Date(baseVenc)});
   }
+
+  // apply manual overrides on top of the generated defaults
+  cheques.forEach(c=>{
+    const ov = chequeOverrides[c.n];
+    if(ov){
+      if(ov.monto !== undefined) c.monto = ov.monto;
+      if(ov.vencimiento !== undefined) c.vencimiento = nextBusinessDayOnOrAfter(fromISO(ov.vencimiento));
+    }
+  });
+
   return {cheques, note:adjustedNote};
 }
 
 function renderChequesTable(cheques){
   const wrap = document.getElementById('chequesTableWrap');
   if(cheques.length <= 1){ wrap.innerHTML=''; return; }
-  let html = '<table class="cheques"><thead><tr><th>Cheque</th><th>Monto</th><th>Vencimiento</th></tr></thead><tbody>';
+  let html = '<p class="section-hint" style="margin:0 0 6px;">Podés ajustar el monto o la fecha de cada cheque a mano.</p>';
+  html += '<table class="cheques"><thead><tr><th>Cheque</th><th>Monto</th><th>Vencimiento</th></tr></thead><tbody>';
   cheques.forEach(c=>{
-    html += `<tr><td>#${c.n}</td><td>${fmtMoney(c.monto)}</td><td>${fmtDate(c.vencimiento)}</td></tr>`;
+    html += `<tr>
+      <td>#${c.n}</td>
+      <td><input type="number" class="cheque-monto" data-n="${c.n}" value="${Math.round(c.monto)}" step="1000"></td>
+      <td><input type="date" class="cheque-fecha" data-n="${c.n}" value="${toISO(c.vencimiento)}"></td>
+    </tr>`;
   });
   html += '</tbody></table>';
   wrap.innerHTML = html;
+
+  wrap.querySelectorAll('.cheque-monto').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const n = parseInt(inp.dataset.n,10);
+      chequeOverrides[n] = chequeOverrides[n] || {};
+      chequeOverrides[n].monto = parseFloat(inp.value) || 0;
+      calc();
+    });
+  });
+  wrap.querySelectorAll('.cheque-fecha').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const n = parseInt(inp.dataset.n,10);
+      chequeOverrides[n] = chequeOverrides[n] || {};
+      chequeOverrides[n].vencimiento = inp.value;
+      calc();
+    });
+  });
 }
 
 // ---------- reverse solve: nominal needed to reach a target net amount ----------
@@ -615,10 +732,50 @@ function vendorNetPerUnitNominal(dias, tasaTNA, comVendedora, comSGR, noIvaInter
 }
 
 // ---------- core calc ----------
+function computeSums(cheques, liquidacion, pagoN, tasaTNA, comCompradora, comVendedora, comSGR, noIvaInteres){
+  let bad = false;
+  let sums = {nominal:0, VD:0, intereses:0, gastosNeg:0, ivaGastosComprador:0, montoNetoAPagar:0,
+    comisionTSAv:0, comisionSGRv:0, ingresosBrutos:0, derechosMercado:0, ivaGastosVendedor:0,
+    montoNetoDeGastos:0, ivaSobreIntereses:0, montoAPercibir:0, diasPonderado:0};
+
+  cheques.forEach(c=>{
+    const pago = addBusinessDays(c.vencimiento, pagoN);
+    const dias = diffDays(liquidacion, pago);
+    if(dias <= 0){ bad = true; return; }
+
+    const VD = c.monto / (1 + tasaTNA/365*dias);
+    const intereses = c.monto - VD;
+    const gastosNeg = c.monto * comCompradora/365*dias;
+    const ivaGastosComprador = gastosNeg * 0.21;
+    const montoNetoAPagar = VD + gastosNeg + ivaGastosComprador;
+
+    const comisionTSAv = VD * comVendedora/365*dias;
+    const comisionSGRv = c.monto * comSGR/365*dias;
+    const ingresosBrutos = c.monto * FIXED_IIBB;
+    const derechosMercado = VD * FIXED_DERECHOS * dias/90;
+    const ivaGastosVendedor = (comisionTSAv+comisionSGRv+derechosMercado)*0.21;
+    const montoNetoDeGastos = VD-comisionTSAv-comisionSGRv-ingresosBrutos-derechosMercado-ivaGastosVendedor;
+    const ivaSobreIntereses = noIvaInteres ? 0 : intereses*0.21;
+    const montoAPercibir = montoNetoDeGastos - ivaSobreIntereses;
+
+    sums.nominal += c.monto; sums.VD += VD; sums.intereses += intereses;
+    sums.gastosNeg += gastosNeg; sums.ivaGastosComprador += ivaGastosComprador; sums.montoNetoAPagar += montoNetoAPagar;
+    sums.comisionTSAv += comisionTSAv; sums.comisionSGRv += comisionSGRv; sums.ingresosBrutos += ingresosBrutos;
+    sums.derechosMercado += derechosMercado; sums.ivaGastosVendedor += ivaGastosVendedor;
+    sums.montoNetoDeGastos += montoNetoDeGastos; sums.ivaSobreIntereses += ivaSobreIntereses; sums.montoAPercibir += montoAPercibir;
+    sums.diasPonderado += dias * c.monto;
+  });
+
+  return {sums, bad};
+}
+
+let lastCalc = null; // snapshot used by WhatsApp share and "guardar en historial"
+
 function calc(){
   const warningBox = document.getElementById('warningBox');
   warningBox.innerHTML = '';
 
+  const cliente = document.getElementById('inpCliente').value.trim();
   const concIso = document.getElementById('inpConcertacion').value;
   const tasaTNA = (parseFloat(document.getElementById('inpTasa').value) || 0) / 100;
   const condicionIva = document.getElementById('inpCondicionIva').value;
@@ -677,46 +834,16 @@ function calc(){
 
   if(cheques.length === 0){ renderTimeline(null); return; }
 
+  const ultimoPago = addBusinessDays(cheques[cheques.length-1].vencimiento, pagoN);
   renderTimeline({
     concertacion, liquidacion,
     vencimiento: cheques[0].vencimiento,
-    pago: addBusinessDays(cheques[cheques.length-1].vencimiento, pagoN),
-    dias: diffDays(liquidacion, addBusinessDays(cheques[cheques.length-1].vencimiento, pagoN)),
+    pago: ultimoPago,
+    dias: diffDays(liquidacion, ultimoPago),
     multiple: cheques.length>1
   });
 
-  let bad = false;
-  let sums = {nominal:0, VD:0, intereses:0, gastosNeg:0, ivaGastosComprador:0, montoNetoAPagar:0,
-    comisionTSAv:0, comisionSGRv:0, ingresosBrutos:0, derechosMercado:0, ivaGastosVendedor:0,
-    montoNetoDeGastos:0, ivaSobreIntereses:0, montoAPercibir:0, diasPonderado:0};
-
-  cheques.forEach(c=>{
-    const pago = addBusinessDays(c.vencimiento, pagoN);
-    const dias = diffDays(liquidacion, pago);
-    if(dias <= 0){ bad = true; return; }
-
-    const VD = c.monto / (1 + tasaTNA/365*dias);
-    const intereses = c.monto - VD;
-    const gastosNeg = c.monto * comCompradora/365*dias;
-    const ivaGastosComprador = gastosNeg * 0.21;
-    const montoNetoAPagar = VD + gastosNeg + ivaGastosComprador;
-
-    const comisionTSAv = VD * comVendedora/365*dias;
-    const comisionSGRv = c.monto * comSGR/365*dias;
-    const ingresosBrutos = c.monto * FIXED_IIBB;
-    const derechosMercado = VD * FIXED_DERECHOS * dias/90;
-    const ivaGastosVendedor = (comisionTSAv+comisionSGRv+derechosMercado)*0.21;
-    const montoNetoDeGastos = VD-comisionTSAv-comisionSGRv-ingresosBrutos-derechosMercado-ivaGastosVendedor;
-    const ivaSobreIntereses = noIvaInteres ? 0 : intereses*0.21;
-    const montoAPercibir = montoNetoDeGastos - ivaSobreIntereses;
-
-    sums.nominal += c.monto; sums.VD += VD; sums.intereses += intereses;
-    sums.gastosNeg += gastosNeg; sums.ivaGastosComprador += ivaGastosComprador; sums.montoNetoAPagar += montoNetoAPagar;
-    sums.comisionTSAv += comisionTSAv; sums.comisionSGRv += comisionSGRv; sums.ingresosBrutos += ingresosBrutos;
-    sums.derechosMercado += derechosMercado; sums.ivaGastosVendedor += ivaGastosVendedor;
-    sums.montoNetoDeGastos += montoNetoDeGastos; sums.ivaSobreIntereses += ivaSobreIntereses; sums.montoAPercibir += montoAPercibir;
-    sums.diasPonderado += dias * c.monto;
-  });
+  const {sums, bad} = computeSums(cheques, liquidacion, pagoN, tasaTNA, comCompradora, comVendedora, comSGR, noIvaInteres);
 
   if(bad){
     warningBox.innerHTML += '<div class="warning">Alguna fecha de vencimiento es anterior o igual a la fecha de liquidación — revisá los datos.</div>';
@@ -765,6 +892,35 @@ function calc(){
     <div class="row total"><span class="k">Monto a percibir con descuento adicional</span><span class="v">${fmtMoney(montoAPercibirConExtra)}</span></div>
     ` : ''}
   `;
+
+  renderTasaScenarios(cheques, liquidacion, pagoN, tasaTNA, comCompradora, comVendedora, comSGR, noIvaInteres);
+
+  lastCalc = {
+    cliente, instrumento: state.instrumento, tasaTNA, dias: diasProm, cheques: cheques.length,
+    nominal: sums.nominal, rendimiento, costoNeto,
+    montoNetoAPagar: sums.montoNetoAPagar,
+    montoAPercibir: extraOn ? montoAPercibirConExtra : sums.montoAPercibir,
+    vencimiento: cheques[0].vencimiento, pago: ultimoPago
+  };
+}
+
+// ---------- tasa scenario table ----------
+function renderTasaScenarios(cheques, liquidacion, pagoN, tasaBase, comCompradora, comVendedora, comSGR, noIvaInteres){
+  const wrap = document.getElementById('tasaScenariosWrap');
+  if(!wrap) return;
+  const offsets = [-2,-1,0,1,2];
+  let html = '<table class="cheques"><thead><tr><th>Tasa TNA</th><th>Costo neto vendedor (TNA)</th><th>Monto a percibir</th></tr></thead><tbody>';
+  offsets.forEach(off=>{
+    const tasa = Math.max(0, tasaBase + off/100);
+    const {sums, bad} = computeSums(cheques, liquidacion, pagoN, tasa, comCompradora, comVendedora, comSGR, noIvaInteres);
+    if(bad || sums.montoAPercibir<=0){ html += `<tr><td>${fmtPct(tasa)}</td><td colspan="2">—</td></tr>`; return; }
+    const diasProm = sums.diasPonderado / sums.nominal;
+    const costoNeto = (sums.nominal/sums.montoAPercibir - 1) * 365/diasProm;
+    const isBase = off===0;
+    html += `<tr${isBase?' style="color:var(--gray-100);font-weight:700;"':''}><td>${fmtPct(tasa)}${isBase?' (actual)':''}</td><td>${fmtPct(costoNeto)}</td><td>${fmtMoney(sums.montoAPercibir)}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
 }
 
 function renderTimeline(d){
@@ -822,6 +978,128 @@ async function downloadCardPDF(elId, filename, label){
 }
 document.getElementById('btnDlComprador').addEventListener('click', ()=>downloadCardPDF('cardComprador','tsa_resumen_comprador.pdf','Comprador'));
 document.getElementById('btnDlVendedor').addEventListener('click', ()=>downloadCardPDF('cardVendedor','tsa_resumen_vendedor.pdf','Vendedor'));
+
+// ---------- theme toggle ----------
+const THEME_KEY = 'tsa_theme_v1';
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t==='light' ? '☀️ Claro' : '🌙 Oscuro';
+}
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const next = cur === 'light' ? 'dark' : 'light';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+});
+
+// ---------- WhatsApp share ----------
+function shareWhatsApp(label){
+  if(!lastCalc){ alert('Primero completá los datos de la operación.'); return; }
+  const c = lastCalc;
+  const clienteLine = c.cliente ? `Cliente: ${c.cliente}\n` : '';
+  const instrumentoLabel = c.instrumento === 'CPD' ? 'Cheque de pago diferido' : 'Pagaré bursátil';
+  let text;
+  if(label === 'Comprador'){
+    text = `*TSA Bursátil — Resumen Comprador*\n${clienteLine}Instrumento: ${instrumentoLabel}\nNominal: ${fmtMoney(c.nominal)}\nTasa: ${fmtPct(c.tasaTNA)} TNA\nDías: ${c.dias.toFixed(1)}\nVencimiento: ${fmtDate(c.vencimiento)}\n*Monto a pagar: ${fmtMoney(c.montoNetoAPagar)}*\nRendimiento neto: ${fmtPct(c.rendimiento)} TNA`;
+  } else {
+    text = `*TSA Bursátil — Resumen Vendedor*\n${clienteLine}Instrumento: ${instrumentoLabel}\nNominal: ${fmtMoney(c.nominal)}\nTasa: ${fmtPct(c.tasaTNA)} TNA\nDías: ${c.dias.toFixed(1)}\nPago: ${fmtDate(c.pago)}\n*Monto a percibir: ${fmtMoney(c.montoAPercibir)}*\nCosto neto: ${fmtPct(c.costoNeto)} TNA`;
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+document.getElementById('btnWaComprador').addEventListener('click', ()=>shareWhatsApp('Comprador'));
+document.getElementById('btnWaVendedor').addEventListener('click', ()=>shareWhatsApp('Vendedor'));
+
+// ---------- historial de operaciones ----------
+const HISTORIAL_KEY = 'tsa_historial_v1';
+function loadHistorial(){
+  try{ return JSON.parse(localStorage.getItem(HISTORIAL_KEY)) || []; }catch(e){ return []; }
+}
+function saveHistorialList(list){ localStorage.setItem(HISTORIAL_KEY, JSON.stringify(list)); }
+function fmtMoneySafe(v){ return typeof v === 'number' ? fmtMoney(v) : v; }
+
+function renderHistorial(){
+  const wrap = document.getElementById('historialWrap');
+  const list = loadHistorial();
+  if(list.length === 0){ wrap.innerHTML = '<div style="text-align:center;color:var(--ink-dim);font-size:13px;padding:16px 0;">Todavía no guardaste ninguna operación.</div>'; return; }
+  wrap.innerHTML = list.map((op,idx)=>`
+    <div class="hist-row">
+      <div class="hist-info">
+        <b>${op.cliente || 'Sin nombre'} · ${op.instrumento === 'CPD' ? 'CPD' : 'Pagaré'} · ${fmtMoneySafe(op.nominal)}</b>
+        <small>Tasa ${op.tasaPct}% · Neto vendedor ${fmtMoneySafe(op.montoAPercibir)} · guardado ${op.guardadoEl}</small>
+      </div>
+      <button class="hist-btn" data-action="cargar" data-idx="${idx}">Cargar</button>
+      <button class="hist-btn danger" data-action="borrar" data-idx="${idx}">Borrar</button>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('[data-action="cargar"]').forEach(b=>{
+    b.addEventListener('click', ()=>cargarHistorial(parseInt(b.dataset.idx,10)));
+  });
+  wrap.querySelectorAll('[data-action="borrar"]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      if(!confirm('¿Borrar esta operación del historial?')) return;
+      const list2 = loadHistorial();
+      list2.splice(parseInt(b.dataset.idx,10),1);
+      saveHistorialList(list2);
+      renderHistorial();
+    });
+  });
+}
+
+document.getElementById('btnGuardarHistorial').addEventListener('click', ()=>{
+  if(!lastCalc){ alert('Primero completá los datos de la operación.'); return; }
+  const list = loadHistorial();
+  list.unshift({
+    cliente: lastCalc.cliente,
+    instrumento: lastCalc.instrumento,
+    nominal: lastCalc.nominal,
+    tasaPct: (lastCalc.tasaTNA*100).toFixed(1),
+    montoAPercibir: lastCalc.montoAPercibir,
+    concertacion: document.getElementById('inpConcertacion').value,
+    vencimiento: document.getElementById('inpVencimiento').value,
+    plazo: state.plazo,
+    modo: state.modo,
+    modoCalculo: state.modoCalculo,
+    comCompradora: document.getElementById('inpComCompradora').value,
+    comVendedora: document.getElementById('inpComVendedora').value,
+    comSGR: document.getElementById('inpComSGR').value,
+    condicionIva: document.getElementById('inpCondicionIva').value,
+    guardadoEl: new Date().toLocaleDateString('es-AR') + ' ' + new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})
+  });
+  saveHistorialList(list.slice(0,30)); // conservamos las últimas 30
+  renderHistorial();
+});
+
+function cargarHistorial(idx){
+  const list = loadHistorial();
+  const op = list[idx];
+  if(!op) return;
+  document.getElementById('inpCliente').value = op.cliente || '';
+  document.getElementById('inpNominal').value = op.nominal;
+  document.getElementById('inpConcertacion').value = op.concertacion;
+  document.getElementById('inpVencimiento').value = op.vencimiento;
+  document.getElementById('inpComCompradora').value = op.comCompradora;
+  document.getElementById('inpComVendedora').value = op.comVendedora;
+  document.getElementById('inpComSGR').value = op.comSGR;
+  document.getElementById('inpCondicionIva').value = op.condicionIva;
+  document.getElementById('inpTasa').value = op.tasaPct;
+
+  state.instrumento = op.instrumento;
+  document.querySelectorAll('#instrumentoToggle button').forEach(b=>b.classList.toggle('active', b.dataset.val===op.instrumento));
+  state.plazo = op.plazo;
+  document.querySelectorAll('#plazoToggle button').forEach(b=>b.classList.toggle('active', b.dataset.val===op.plazo));
+  state.modoCalculo = op.modoCalculo || 'NOMINAL';
+  document.querySelectorAll('#modoCalculoToggle button').forEach(b=>b.classList.toggle('active', b.dataset.val===state.modoCalculo));
+  document.getElementById('fieldNominal').style.display = state.modoCalculo==='NETO' ? 'none' : '';
+  document.getElementById('fieldNetoObjetivo').style.display = state.modoCalculo==='NETO' ? '' : 'none';
+  document.getElementById('fieldModoCarga').style.display = state.modoCalculo==='NETO' ? 'none' : '';
+
+  chequeOverrides = {};
+  lastChequeSignature = null;
+  window.scrollTo({top:0, behavior:'smooth'});
+  calc();
+}
+renderHistorial();
 
 calc();
 </script>
